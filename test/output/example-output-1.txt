@@ -1,0 +1,189 @@
+(base) [19:31]:[$USER@W-GPVW493|CentOS-7:update-os-ubuntu]$ ansible-playbook -i /var/tmp/inventory.txt update_pkg.yml -u $USER --become --extra-vars "serial_limit=2"
+
+PLAY [nodes] **************************************************************************************************************************************************************
+
+TASK [Gathering Facts] ****************************************************************************************************************************************************
+ok: [35.203.155.182]
+ok: [34.83.208.180]
+
+TASK [assert host is running ubuntu version we're updating] ***************************************************************************************************************
+ok: [35.203.155.182] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+ok: [34.83.208.180] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [debug] **************************************************************************************************************************************************************
+ok: [35.203.155.182] => {
+    "ansible_distribution_version": "16.04"
+}
+ok: [34.83.208.180] => {
+    "ansible_distribution_version": "18.04"
+}
+
+TASK [debug] **************************************************************************************************************************************************************
+ok: [35.203.155.182] => {
+    "ansible_distribution": "Ubuntu"
+}
+ok: [34.83.208.180] => {
+    "ansible_distribution": "Ubuntu"
+}
+
+TASK [output os version before update] ************************************************************************************************************************************
+ok: [35.203.155.182] => {
+    "msg": "OS: Ubuntu version: 16.04"
+}
+ok: [34.83.208.180] => {
+    "msg": "OS: Ubuntu version: 18.04"
+}
+
+TASK [gather package facts before update] *********************************************************************************************************************************
+ok: [35.203.155.182]
+ok: [34.83.208.180]
+
+TASK [list versions of packages before update] ****************************************************************************************************************************
+ok: [35.203.155.182] => (item=sudo) => {
+    "msg": [
+        {
+            "name": "sudo",
+            "version": "1.8.16-0ubuntu1.10"
+        }
+    ]
+}
+ok: [35.203.155.182] => (item=vim-common) => {
+    "msg": [
+        {
+            "name": "vim-common",
+            "version": "2:7.4.1689-3ubuntu1.5"
+        }
+    ]
+}
+ok: [34.83.208.180] => (item=sudo) => {
+    "msg": [
+        {
+            "name": "sudo",
+            "version": "1.8.21p2-3ubuntu1.4"
+        }
+    ]
+}
+ok: [34.83.208.180] => (item=vim-common) => {
+    "msg": [
+        {
+            "name": "vim-common",
+            "version": "2:8.0.1453-1ubuntu1.4"
+        }
+    ]
+}
+
+TASK [update pkg] *********************************************************************************************************************************************************
+ok: [35.203.155.182]
+ok: [34.83.208.180]
+
+TASK [gather package facts after update] **********************************************************************************************************************************
+ok: [34.83.208.180]
+ok: [35.203.155.182]
+
+TASK [list versions of packages after update] *****************************************************************************************************************************
+ok: [35.203.155.182] => (item=sudo) => {
+    "msg": [
+        {
+            "name": "sudo",
+            "version": "1.8.16-0ubuntu1.10"
+        }
+    ]
+}
+ok: [35.203.155.182] => (item=vim-common) => {
+    "msg": [
+        {
+            "name": "vim-common",
+            "version": "2:7.4.1689-3ubuntu1.5"
+        }
+    ]
+}
+ok: [34.83.208.180] => (item=sudo) => {
+    "msg": [
+        {
+            "name": "sudo",
+            "version": "1.8.21p2-3ubuntu1.4"
+        }
+    ]
+}
+ok: [34.83.208.180] => (item=vim-common) => {
+    "msg": [
+        {
+            "name": "vim-common",
+            "version": "2:8.0.1453-1ubuntu1.4"
+        }
+    ]
+}
+
+TASK [check lsbrelease] ***************************************************************************************************************************************************
+changed: [34.83.208.180]
+changed: [35.203.155.182]
+
+TASK [check uptime] *******************************************************************************************************************************************************
+changed: [34.83.208.180]
+changed: [35.203.155.182]
+
+TASK [check uname] ********************************************************************************************************************************************************
+changed: [34.83.208.180]
+changed: [35.203.155.182]
+
+TASK [output various check vars] ******************************************************************************************************************************************
+ok: [35.203.155.182] => (item=check_uname_after_update) => {
+    "ansible_loop_var": "item",
+    "check_uname_after_update.stdout_lines": [
+        "Linux ubu-1604-1 4.15.0-1092-gcp #105~16.04.1-Ubuntu SMP Wed Jan 20 09:27:40 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux"
+    ],
+    "item": "check_uname_after_update"
+}
+ok: [35.203.155.182] => (item=check_uptime_after_update) => {
+    "ansible_loop_var": "item",
+    "check_uptime_after_update.stdout_lines": [
+        " 03:32:23 up  1:28,  1 user,  load average: 0.07, 0.04, 0.00"
+    ],
+    "item": "check_uptime_after_update"
+}
+ok: [35.203.155.182] => (item=check_lsbrelease) => {
+    "ansible_loop_var": "item",
+    "check_lsbrelease.stdout_lines": [
+        "Distributor ID:\tUbuntu",
+        "Description:\tUbuntu 16.04.7 LTS",
+        "Release:\t16.04",
+        "Codename:\txenial"
+    ],
+    "item": "check_lsbrelease"
+}
+ok: [34.83.208.180] => (item=check_uname_after_update) => {
+    "ansible_loop_var": "item",
+    "check_uname_after_update.stdout_lines": [
+        "Linux ubu-1804-1 5.4.0-1036-gcp #39~18.04.1-Ubuntu SMP Sun Jan 17 11:08:21 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux"
+    ],
+    "item": "check_uname_after_update"
+}
+ok: [34.83.208.180] => (item=check_uptime_after_update) => {
+    "ansible_loop_var": "item",
+    "check_uptime_after_update.stdout_lines": [
+        " 03:32:23 up  1:22,  1 user,  load average: 0.13, 0.05, 0.01"
+    ],
+    "item": "check_uptime_after_update"
+}
+ok: [34.83.208.180] => (item=check_lsbrelease) => {
+    "ansible_loop_var": "item",
+    "check_lsbrelease.stdout_lines": [
+        "Distributor ID:\tUbuntu",
+        "Description:\tUbuntu 18.04.5 LTS",
+        "Release:\t18.04",
+        "Codename:\tbionic"
+    ],
+    "item": "check_lsbrelease"
+}
+
+PLAY RECAP ****************************************************************************************************************************************************************
+34.83.208.180              : ok=14   changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+35.203.155.182             : ok=14   changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+(base) [19:32]:[$USER@W-GPVW493|CentOS-7:update-os-ubuntu]$

@@ -1,0 +1,17 @@
+(base) [19:32]:[ehf@W-GPVW493|CentOS-7:update-os-ubuntu]$ cat /var/tmp/inventory.txt
+
+[nodes]
+35.203.155.182 ansible_ssh_private_key_file=/home/$USER/.ssh/id_ed25519.pub
+34.83.208.180 ansible_ssh_private_key_file=/home/$USER/.ssh/id_ed25519.pub
+(base) [19:33]:[ehf@W-GPVW493|CentOS-7:update-os-ubuntu]$
+
+
+
+(base) [22:48]:[ehf@W-GPVW493|CentOS-7:update-os-ubuntu]$ cat /var/tmp/inventory.txt
+
+[nodes]
+34.82.184.45 ansible_ssh_private_key_file=/home/$USER/.ssh/id_ed25519.pub
+35.203.155.182 ansible_ssh_private_key_file=/home/$USER/.ssh/id_ed25519.pub
+34.105.64.15 ansible_ssh_private_key_file=/home/$USER/.ssh/id_ed25519.pub
+34.83.126.81 ansible_ssh_private_key_file=/home/$USER/.ssh/id_ed25519.pub
+(base) [22:51]:[ehf@W-GPVW493|CentOS-7:update-os-ubuntu]$

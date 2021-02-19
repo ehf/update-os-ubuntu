@@ -1,0 +1,115 @@
+--- 
+
+# sudo CVE for Ubuntu: https://ubuntu.com/security/CVE-2021-3156
+# sudo CVE for RedHat: https://access.redhat.com/security/vulnerabilities/RHSB-2021-002
+# https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-3156
+
+- hosts: nodes
+  gather_facts: yes
+  max_fail_percentage: 49
+  serial: "{{ serial_limit }}"
+  vars:
+    timeout_check: '1200'
+    timeout_delay: '30'
+    serial_limit: '1'
+    pause_seconds: '20'
+    packages_to_update:
+      - sudo
+      - vim-common
+    ubuntu_distribution_versions:
+      - '16.04'
+      - '18.04'
+  handlers:
+    - name: pause in between
+      pause: seconds={{ pause_seconds }}
+  tasks:
+    - name: "assert host is running ubuntu version we're updating"
+      assert:
+        that:
+          - ansible_distribution == 'Ubuntu'
+          - ansible_distribution_version in ubuntu_distribution_versions
+      tags:
+        - assert-os-version
+
+    - name: "output os version before update"
+      debug:
+        msg: "{{ ansible_distribution}} {{ ansible_distribution_version }}"
+      tags:
+        - assert-os-version
+
+    - name: "gather package facts before update"
+      package_facts:
+        manager: auto
+      tags:
+        - update-pkgs
+
+    - name: "list versions of packages before update"
+      debug:
+        msg: "{{ ansible_facts.packages[item] | json_query('[*].{ name: name, version: version }') }}"
+      with_items:
+        - "{{ packages_to_update }}"
+      when: 
+        - "item in ansible_facts.packages"
+      tags:
+        - update-pkgs
+       
+    - name: "update pkg"
+      apt:
+        name: "{{ packages_to_update }}"
+        state: latest
+        update_cache: yes
+      notify:
+        - pause in between
+      tags:
+        - update-pkgs
+
+    - name: "gather package facts after update"
+      package_facts:
+        manager: auto
+      tags:
+        - update-pkgs
+
+    - name: "list versions of packages after update"
+      debug:
+        msg: "{{ ansible_facts.packages[item] | json_query('[*].{ name: name, version: version }') }}"
+      with_items:
+        - "{{ packages_to_update }}"
+      when: 
+        - "item in ansible_facts.packages"
+      tags:
+        - update-pkgs
+
+    - name: "check lsbrelease after update" 
+      shell: "lsb_release -a"
+      register: check_lsbrelease
+      tags:
+        - verify-os-after-update
+        - update-os
+
+    - name: "check uptime after update" 
+      shell: "uptime" 
+      register: check_uptime_after_update
+      tags:
+        - verify-os-after-update
+        - check-uptime-after-update
+        - update-os
+
+    - name: "check uname after update" 
+      shell: "uname -a" 
+      register: check_uname_after_update
+      tags:
+        - verify-os-after-update
+        - check-uptime-after-update
+        - update-os
+
+    - name: "output various check vars"
+      debug:
+        var: "{{ item }}.stdout_lines"
+      with_items:
+        - check_uname_after_update
+        - check_uptime_after_update
+        - check_lsbrelease
+      tags:
+        - verify-os-after-update
+        - check-uptime-after-update
+        - update-os

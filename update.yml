@@ -1,0 +1,148 @@
+--- 
+
+- hosts: nodes
+  gather_facts: yes
+  max_fail_percentage: 49
+  serial: "{{ serial_limit }}"
+  vars:
+    timeout_check: '1200'
+    timeout_delay: '30'
+    serial_limit: '1'
+    pause_seconds: '20'
+    ubuntu_distribution_versions:
+      - '16.04'
+      - '18.04'
+  handlers:
+    - name: pause in between
+      pause: seconds={{ pause_seconds }}
+  tasks:
+    - name: "assert host is running ubuntu version we're updating"
+      assert:
+        that:
+          - ansible_distribution == 'Ubuntu'
+          - ansible_distribution_version in ubuntu_distribution_versions
+      tags:
+        - assert-os-version
+        - update-os
+
+    - name: "output os version before update"
+      debug:
+        msg: "{{ ansible_distribution}} {{ ansible_distribution_version }}"
+      tags:
+        - assert-os-version
+        - update-os
+
+    - name: "output kernel version before update"
+      debug:
+        msg: "kernel: {{ ansible_kernel }} kernel_version: {{ ansible_kernel_version }}"
+      tags:
+        - assert-os-version
+        - update-os
+       
+    - name: "if needed, install ipmitool"
+      apt:
+        name: ipmitool
+        state: present
+        update_cache: yes
+      tags:
+        - install-ipmitool
+        - update-os
+
+    - name: "collect host console info"
+      shell: 
+        cmd: ipmitool lan print | awk -F":" '$1 ~ /IP Address|Subnet Mask|Default Gateway IP/ {print $0}'
+      register: console_info
+      tags:
+        - install-ipmitool
+        - update-os
+
+    - name: "output host console info"
+      debug: 
+        var: "console_info.stdout_lines"
+      tags:
+        - install-ipmitool
+        - update-os
+
+    - name: "update os"
+      apt:
+        upgrade: safe
+        state: latest
+        update_cache: yes
+      notify:
+        - pause in between
+      tags:
+        - update-os
+
+    - name: "check if reboot is needed" 
+      stat:
+        path: "/var/run/reboot-required"
+      register: reboot_required_file
+      tags:
+        - check-if-reboot-required
+        - update-os
+
+    - name: "reboot host if required"
+      reboot:
+        msg: "Reboot initiated by Ansible"
+        connect_timeout: "{{ timeout_delay }}" 
+        reboot_timeout: "{{ timeout_check }}"
+        pre_reboot_delay: "{{ timeout_delay }}"
+        post_reboot_delay: "{{ timeout_delay }}"
+        test_command: uptime
+      when:
+        - reboot_required_file.stat.exists | bool
+        - reboot_required_file.stat.isreg | bool
+      notify:
+        - pause in between
+      tags:
+        - reboot-host
+        - update-os
+
+    - name: "check for host to come back online"
+      wait_for: 
+        host: "{{ inventory_hostname }}"
+        port: "{{ ansible_ssh_port | default(22) }}"
+        state: started
+        delay: "{{ timeout_delay }}"
+        timeout: "{{ timeout_check }}"
+      become: no
+      when:
+        - reboot_required_file.stat.exists | bool
+        - reboot_required_file.stat.isreg | bool
+      tags:
+        - reboot-host
+        - update-os
+
+    - name: "check lsbrelease after update" 
+      shell: "lsb_release -a"
+      register: check_lsbrelease
+      tags:
+        - verify-os-after-update
+        - update-os
+
+    - name: "check uptime after update" 
+      shell: "uptime" 
+      register: check_uptime_after_update
+      tags:
+        - verify-os-after-update
+        - check-uptime-after-update
+        - update-os
+
+    - name: "check uname after update"
+      shell: "uname -a"
+      register: check_uname_after_update
+      tags:
+        - verify-os-after-update
+        - update-os
+
+    - name: "output various check vars"
+      debug:
+        var: "{{ item }}.stdout_lines"
+      with_items:
+        - check_uname_after_update
+        - check_uptime_after_update
+        - check_lsbrelease
+      tags:
+        - verify-os-after-update
+        - check-uptime-after-update
+        - update-os
