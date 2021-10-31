@@ -1,4 +1,4 @@
---- 
+---
 
 # sudo CVE for Ubuntu: https://ubuntu.com/security/CVE-2021-3156
 # sudo CVE for RedHat: https://access.redhat.com/security/vulnerabilities/RHSB-2021-002
@@ -48,11 +48,11 @@
         msg: "{{ ansible_facts.packages[item] | json_query('[*].{ name: name, version: version }') }}"
       with_items:
         - "{{ packages_to_update }}"
-      when: 
+      when:
         - "item in ansible_facts.packages"
       tags:
         - update-pkgs
-       
+
     - name: "update pkg"
       apt:
         name: "{{ packages_to_update }}"
@@ -74,28 +74,28 @@
         msg: "{{ ansible_facts.packages[item] | json_query('[*].{ name: name, version: version }') }}"
       with_items:
         - "{{ packages_to_update }}"
-      when: 
+      when:
         - "item in ansible_facts.packages"
       tags:
         - update-pkgs
 
-    - name: "check lsbrelease after update" 
+    - name: "check lsbrelease after update"
       shell: "lsb_release -a"
       register: check_lsbrelease
       tags:
         - verify-os-after-update
         - update-os
 
-    - name: "check uptime after update" 
-      shell: "uptime" 
+    - name: "check uptime after update"
+      shell: "uptime"
       register: check_uptime_after_update
       tags:
         - verify-os-after-update
         - check-uptime-after-update
         - update-os
 
-    - name: "check uname after update" 
-      shell: "uname -a" 
+    - name: "check uname after update"
+      shell: "uname -a"
       register: check_uname_after_update
       tags:
         - verify-os-after-update
